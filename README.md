@@ -51,8 +51,13 @@ To test module:
 # insmod SandWall
 ```
 The rule of this module is simple, drop all out to in packets, accept only ports 80,443 and 53, machine 192*.181 can connect at ports 22 and 21...
+if you use nmap at localhost/127.0.0.1 you can view the ports open...
 
+To exit module...
 
+```
+# rmmod SandWall
+```
 
 
 
