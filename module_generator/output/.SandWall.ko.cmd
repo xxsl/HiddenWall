@@ -1,0 +1,1 @@
+cmd_/home/madara/cpp/HiddenWall/module_generator/output/SandWall.ko := ld -r -m elf_x86_64  -z max-page-size=0x200000 -T ./scripts/module-common.lds --build-id  -o /home/madara/cpp/HiddenWall/module_generator/output/SandWall.ko /home/madara/cpp/HiddenWall/module_generator/output/SandWall.o /home/madara/cpp/HiddenWall/module_generator/output/SandWall.mod.o
