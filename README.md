@@ -1,6 +1,6 @@
 # HiddenWall
 Linux kernel module generator for custom rules with netfilter. (block ports, Hidden mode, rootkit functions etc)
-
+![Alt text](https://github.com/CoolerVoid/HiddenWall/blob/master/doc/wall.png)
 
 First step, understand before run
 --
