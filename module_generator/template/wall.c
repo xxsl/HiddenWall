@@ -1,4 +1,3 @@
-#define __KERNEL__
 #include <linux/ip.h>
 #include <linux/udp.h>
 #include <linux/tcp.h>
@@ -129,4 +128,4 @@ void cleanup_module() { nf_unregister_hook(&netfilter_ops); }
 
 MODULE_LICENSE(" BSD 2");
 MODULE_AUTHOR("CoolerVoid");
-MODULE_DESCRIPTION("Netfilter hidden hook");
+MODULE_DESCRIPTION("Simple netfilter config");

@@ -3,17 +3,19 @@
 #You nd yaml, pyyaml modules... 
 from util import parser
 
-print("HiddenWall- Linux kernel module generator for custom use with netfilter\n\t\tversion 0.1\n \t\tcoded by CoolerVoid\n\n")
-
+template_filename=""
+rules_filename=""
 template_content=""
 template_content2=""
 souce=""
 
+template_filename,rules_filename = parser.arguments()
+
 # load rules of firewall at directory rules
-v=parser.Get_config("rules/server.yaml")
+v=parser.Get_config(rules_filename)
 
 # Load templates
-with open("template/wall.c") as f:
+with open(template_filename) as f:
  content = f.readlines()
 
 for line in content:
@@ -47,5 +49,5 @@ file = open("output/Makefile","w")
 file.write(source2) 
 file.close()
 
-print ("Python Script end, please look the liunux custom kernel module at directory output/\n")
+print ("Python Script end, please look the output your custom kernel module at directory output/\n")
 
