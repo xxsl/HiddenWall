@@ -126,3 +126,7 @@ int init_module()
 	return 0;
 }
 void cleanup_module() { nf_unregister_hook(&netfilter_ops); }
+
+MODULE_LICENSE(" BSD 2");
+MODULE_AUTHOR("CoolerVoid");
+MODULE_DESCRIPTION("Netfilter hidden hook");
