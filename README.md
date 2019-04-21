@@ -67,12 +67,16 @@ To exit module...
 
 References
 --
+
 Wikipedia Netfilter
+
 https://en.wikipedia.org/wiki/Netfilter
 
 Linux Device Drivers
+
 http://lwn.net/Kernel/LDD3/
 
 
 M0nad's Diamorphine
+
 https://github.com/m0nad/Diamorphine/
