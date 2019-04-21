@@ -1,9 +1,15 @@
 # HiddenWall
 Linux kernel module generator for custom rules with netfilter. (block ports, Hidden mode, rootkit functions etc).
 <img align="right" width="240" height="220" src="https://github.com/CoolerVoid/HiddenWall/blob/master/doc/wall.png">
-The motivation: on bad situation, attacker can put your iptables/ufw to fall... but he will not find the hidden kernel module that block external access. Because have a hook to netfilter on kernel land.
+The motivation: on bad situation, attacker can put your iptables/ufw to fall... but if you have HiddenWall, 
+the attacker will not find the hidden kernel module that block external access, because have a hook to netfilter on 
+kernel land(trying to think like a second layer for firewall).
 
-My purpose at this project is protect my friends servers.
+My beginning purpose at this project is protect my personal server, now is protect the machines of my friends.
+When i talk "friends", i say peoples that don't know how to write low level code. Using the HiddenWall you can 
+generate your custom kernel module for your firewall configuration. 
+
+
 
 
 First step, understand before run
