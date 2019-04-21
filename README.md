@@ -39,14 +39,14 @@ whitelist:
    open_ports: 22
 ```
 
-If you want study the generate code, look the content at directory "templates".
+If you want study the static code to generate, look the content at directory "templates".
 
 If you want generate a kernel module following your YAML file of rules, follow that command:
 
 ```
 $ python3 WallGen.py --template template/wall.c -r rules/server.yaml
 ```
-This generate a generic module with rules of server.yaml, if you use another template like "hiddenwall.c", the module run on hidden mode.
+This generate a generic module with rules of server.yaml, if you want to use another template like "hiddenwall.c", the module run on hidden mode.
 is not visible to "# lsmod" for example.
 
 To test module:
@@ -54,8 +54,8 @@ To test module:
 # cd output; make clean; make
 # insmod SandWall
 ```
-The rule of this module is simple, drop all out to in packets, accept only ports 80,443 and 53, machine 192*.181 can connect at ports 22 and 21...
-if you use nmap at localhost/127.0.0.1 you can view the ports open...
+The rule of this module is simple, drop all out to in packets, accept ports 80,443 and 53, machine 192*.181 can connect at ports 22 and 21...
+if you use nmap at localhost/127.0.0.1 machine you can view the ports open... 
 
 To exit module...
 
