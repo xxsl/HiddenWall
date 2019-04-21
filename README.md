@@ -47,6 +47,12 @@ whitelist:
 
 If you want study the static code to generate, look the content at directory "templates".
 
+
+
+
+Second step, generate your module
+--
+
 If you want generate a kernel module following your YAML file of rules, follow that command:
 
 ```
@@ -54,6 +60,11 @@ $ python3 WallGen.py --template template/wall.c -r rules/server.yaml
 ```
 This generate a generic module with rules of server.yaml, if you want to use another template like "hiddenwall.c", the module run on hidden mode.
 is not visible to "# lsmod" for example.
+
+
+
+Third step, install your module
+--
 
 To test module:
 ```
@@ -69,6 +80,11 @@ To exit module...
 # rmmod SandWall
 ```
 
+
+Random notes
+--
+
+Tested on ubuntu 16 and fedora 29 at kernels "4.x".
 
 
 References
