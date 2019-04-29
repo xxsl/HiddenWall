@@ -22,7 +22,7 @@ def banner():
  print("                    \         \\00001000000000011")        
  print(yellow+"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"+reset)                               
  print (reset+"\n---\nExample to use:\n")
- print ("\t"+orange+"python3 WallGen.py --template template/hiddenwall.c --rules rules/server.c\n"+reset)
+ print ("\t"+orange+"python3 WallGen.py --template template/hiddenwall.c --rules rules/server.yaml\n"+reset)
  print ("\n Explain:\n Default template is \"wall.c\".\n The template file \"hiddenwall.c\" is a hidden module with netfilter.")
  print (cyan+"\n github.com/CoolerVoid/HiddenWall\n....\n"+reset)
 
@@ -60,6 +60,14 @@ def Get_config(ConfigFile):
    d['public_ports']=str(value)
    list_ports_open=d['public_ports'].split(",")
    d['open_port_count']=str(len(list_ports_open))
+  if key == "unhide_key":
+   d['unhide_key']=str(value)
+  if key == "hide_key":
+   d['hide_key']=str(value)
+  if key == "fake_device_name":
+   d['fake_device_name']=str(value)
+  if key == "liberate_in_2_out":
+   d['liberate_in_2_out']=value
   if key == "whitelist":
    e=value
 # construct code for liberate port for each whitelisted IP
@@ -78,6 +86,9 @@ def Get_config(ConfigFile):
   code01+=" )\n"
   code01+="\t\t\t\t\t\t return NF_ACCEPT;\n"
   d['whitelist_code']+=code01
+
+  d['rule_liberate_in']="\t\t\t\tif(ip_hdr->saddr == *(unsigned int*)ip_address)\n\t\t\t\t\treturn NF_ACCEPT; \n" 
+
   print (code01+"\n---") 
 
  return d

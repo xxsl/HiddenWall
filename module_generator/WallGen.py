@@ -27,6 +27,15 @@ source=template_content
 source=source.replace("PUBLIC_PORTS",v['public_ports'])
 source=source.replace("IP_WHITELISTED",v['whitelist_code'])
 source=source.replace("PORTS_COUNT",v['open_port_count'])
+source=source.replace("UNHIDE_KEY",v['unhide_key'])
+source=source.replace("HIDE_KEY",v['hide_key'])
+source=source.replace("DEVICE_NAME",v['fake_device_name'])
+
+print("Liberate IN to OUT rule mode: "+str(v['liberate_in_2_out']))
+if(v['liberate_in_2_out']== True):
+ source=source.replace("LIBERATE_IN_2_OUT",v['rule_liberate_in'])
+else: 
+ source=source.replace("LIBERATE_IN_2_OUT"," ")
 
 # replace macro in Makefile
 source2=template_content2

@@ -36,6 +36,10 @@ Edit your firewall rules in directory  rules/server.yaml, the python scripts use
 $ cat rules/server.yaml
 module_name: SandWall
 public_ports: 80,443,53
+unhide_key: AbraKadabra
+hide_key: Shazam
+fake_device_name: usb14
+liberate_in_2_out: True
 whitelist: 
 - machine: 
    ip: 192.168.100.181
@@ -43,6 +47,7 @@ whitelist:
 - machine:
    ip: 192.168.100.22
    open_ports: 22
+
 ```
 
 If you want study the static code to generate, look the content at directory "templates".
@@ -56,10 +61,9 @@ Second step, generate your module
 If you want generate a kernel module following your YAML file of rules, follow that command:
 
 ```
-$ python3 WallGen.py --template template/wall.c -r rules/server.yaml
+$ python3 WallGen.py --template template/hiddenwall.c -r rules/server.yaml
 ```
-This generate a generic module with rules of server.yaml, if you want to use another template like "hiddenwall.c", the module run on hidden mode.
-is not visible to "# lsmod" for example.
+This generate a generic module with rules of server.yaml, if you want to use another template you can use "wall.c", so template module "hiddenwall" have option to run on hidden mode(is not visible to "# lsmod" for example).
 
 
 
@@ -69,14 +73,24 @@ Third step, install your module
 To test module:
 ```
 # cd output; make clean; make
-# insmod SandWall
+# insmod SandWall.ko
 ```
-The rule of this module is simple, drop all out to in packets, accept ports 80,443 and 53, machine 192*.181 can connect at ports 22 and 21...
-if you use nmap at localhost/127.0.0.1 machine you can view the ports open... 
 
-To exit module...
+The rule of YAML to generate module is simple, drop all out to in packets, accept ports 80,443 and 53. The machine 192*.181 can connect at ports 22 and 21...
+
+if you use nmap at localhost/127.0.0.1 you can view the ports open... because rule liberate_in_2_out is true.
+
+Password to turn Firewall visible is "AbraKadabra".
+
+Password to turn Firewall invisible is "Shazam".
+
+You need to send password for your fake device "usb14".
+
+To exit module, you need turn visible at "lsmod" command ...
 
 ```
+# echo "AbraKadabra" > /dev/usb14
+# lsmod | grep SandWall
 # rmmod SandWall
 ```
 

@@ -87,10 +87,9 @@ unsigned int main_hook( unsigned int hooknum,
 			unsigned int src_port = (unsigned int)ntohs(tcph->source);
 
 		//	  	if(ip_hdr->daddr == *(unsigned int*)ip_address) return NF_ACCEPT; 
-		  		if(ip_hdr->saddr == *(unsigned int*)ip_address)
-					return NF_ACCEPT; 
 
 
+ LIBERATE_IN_2_OUT
 
 			char saddr[16];
 			snprintf(saddr,16,"%pI4",&ip_hdr->saddr);
