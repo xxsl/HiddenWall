@@ -47,6 +47,7 @@ def Get_config(ConfigFile):
  d={}
  e={}
  d['whitelist_code']=""
+ d['whitelist_var']=""
  document = open(ConfigFile, 'r')
  parsed = yaml.load(document, Loader=yaml.FullLoader)
  x=0
@@ -72,22 +73,23 @@ def Get_config(ConfigFile):
    e=value
 # construct code for liberate port for each whitelisted IP
  for v in e:
+  code01=""
   x+=1
   print ("Construct code for addr: "+v['machine']['ip']+" for ports: "+ str(v['machine']['open_ports'])+"\n---\n" )
   varname="var0"+str(x)
-  code01="\n\t\t\t char *"+varname+" = \""+v['machine']['ip']+"\"; \n"
-  code01+="\t\t\t\t if((strncasecmp(saddr,"+varname+",16)==0)||(strncasecmp(daddr,"+varname+",16)==0))\n"
+  code_var="\n\t char *"+varname+" = \""+v['machine']['ip']+"\"; \n"
+  code01+="\t\t if((strncasecmp(saddr,"+varname+",16)==0)||(strncasecmp(daddr,"+varname+",16)==0))\n"
   strport=str(v['machine']['open_ports'])
   list_ports=strport.split(",")
-  code01+="\t\t\t\t\t if( "
+  code01+="\t\t\t if( "
   for port in list_ports:
    code01+="dest_port == "+port+" || src_port == "+port+" ||"
   code01=code01[:-3]
   code01+=" )\n"
-  code01+="\t\t\t\t\t\t return NF_ACCEPT;\n"
+  code01+="\t\t\t\t return NF_ACCEPT;\n"
   d['whitelist_code']+=code01
-
-  d['rule_liberate_in']="\t\t\t\tif(ip_hdr->saddr == *(unsigned int*)ip_address)\n\t\t\t\t\treturn NF_ACCEPT; \n" 
+  d['whitelist_var']+=code_var
+  d['rule_liberate_in']="\t\tif(ip_hdr->saddr == *(unsigned int*)ip_address)\n\t\t\treturn NF_ACCEPT; \n" 
 
   print (code01+"\n---") 
 
