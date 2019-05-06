@@ -7,6 +7,7 @@
 #include <linux/netdevice.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
+#include <linux/netfilter_ipv6.h>
 #include <linux/skbuff.h>
 #include <linux/init.h>
 #include <linux/fs.h>
@@ -14,7 +15,6 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
-
 
 static unsigned int major; /* major number for device */
 static struct class *fake_class;
@@ -316,14 +316,22 @@ int init_module()
         netfilter_ops.pf = PF_INET;
         netfilter_ops.hooknum = NF_INET_PRE_ROUTING;
         netfilter_ops.priority = NF_IP_PRI_FIRST;
-        nf_register_hook(&netfilter_ops);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
+	nf_register_net_hook(&init_net, &netfilter_ops);
+#else
+	nf_register_hook(&netfilter_ops);
+#endif
 	return 0;
 }
 
 void cleanup_module() 
 { 
-	nf_unregister_hook(&netfilter_ops); 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
+	nf_unregister_net_hook(&init_net, &netfilter_ops);
+#else
+	nf_unregister_hook(&netfilter_ops);
+#endif
 	unregister_chrdev_region(MKDEV(major, 0), 1);
 	device_destroy(fake_class, MKDEV(major, 0));
 	cdev_del(&fake_cdev);
