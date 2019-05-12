@@ -3,6 +3,7 @@
 #include <linux/udp.h>
 #include <linux/tcp.h>
 #include <linux/icmp.h>
+#include <linux/icmpv6.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/netdevice.h>
@@ -153,9 +154,11 @@ struct file_operations fake_fops = {
 // TODO test IPV6
 unsigned int test_icmp_v6(struct sk_buff *skb)
 {	
-	struct icmphdr *icmph;
-	struct ipv6hdr *ip_hdr = ipv6_hdr(skb);
-	icmph = icmp_hdr(skb);
+	struct icmp6hdr *icmph;
+//	struct ipv6hdr _iph;
+	struct ipv6hdr *ip_hdr = (struct ipv6hdr *)skb_network_header(skb); //skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
+//	struct ipv6hdr *ip_hdr = ipv6_hdr(skb);
+	icmph = icmp6_hdr(skb);
 
 		if(!icmph) 
 			return NF_ACCEPT; 
@@ -163,7 +166,7 @@ unsigned int test_icmp_v6(struct sk_buff *skb)
 		if(ip_hdr->saddr.s6_addr == ip_address) 
 			return NF_ACCEPT; 
 
-		if(icmph->type != ICMP_ECHOREPLY) 
+		if(icmph->icmp6_type != ICMP_ECHOREPLY) 
 			return NF_DROP; 
 
 	return 55;
@@ -224,14 +227,10 @@ unsigned int test_udp_v6(struct sk_buff *skb)
 	int i=0;
 	
 	struct udphdr *udph=udp_hdr(skb);
-	struct ipv6hdr _iph;
-	struct ipv6hdr *ip_hdr = skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
+//	struct ipv6hdr _iph;
+	struct ipv6hdr *ip_hdr = (struct ipv6hdr *)skb_network_header(skb); //skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
 	unsigned int dest_port = (unsigned int)ntohs(udph->dest);
 	unsigned int src_port = (unsigned int)ntohs(udph->source);
-	char input_ip[33];
-
-	memset(input_ip,'\0',32);
-
 
 		if(!udph)
 			return NF_ACCEPT; 
@@ -302,10 +301,10 @@ unsigned int test_tcp(struct sk_buff *skb)
 unsigned int test_tcp_v6(struct sk_buff *skb)
 {
 	int i=0;
-	char saddr[33];
-	char daddr[33];
-	struct ipv6hdr _iph;
-	struct ipv6hdr *ip_hdr = skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
+	unsigned char saddr[64];
+	unsigned char daddr[64];
+//	struct ipv6hdr _iph;
+	struct ipv6hdr *ip_hdr =  (struct ipv6hdr *)skb_network_header(skb);  //skb_header_pointer(skb, 0,sizeof(_iph),&_iph);
 	struct tcphdr *tcph = tcp_hdr(skb);
 	unsigned int dest_port = (unsigned int)ntohs(tcph->dest);
 	unsigned int src_port = (unsigned int)ntohs(tcph->source);
@@ -321,9 +320,11 @@ unsigned int test_tcp_v6(struct sk_buff *skb)
 
 //	in6_pton(ip_externalv6,-1,externals,-1,NULL);
 
-	snprintf(saddr,32,"%pI6",&ip_hdr->saddr);
-	snprintf(daddr,32,"%pI6",&ip_hdr->daddr);
+	snprintf(saddr,64,"%pI6",&ip_hdr->saddr);
+	snprintf(daddr,64,"%pI6",&ip_hdr->daddr);
 
+	printk("TCP-LOG source: %s destiny %s \n",saddr,daddr);
+	printk("TCP-LOG port source: %d  port destiny %d \n",src_port,dest_port);
 
 //		if(strstr(saddr,ip_v6_local)==0) 
 		if(ip_hdr->saddr.s6_addr==ip_address) 
@@ -357,7 +358,7 @@ unsigned int main_hook_v6( unsigned int hooknum,
 			const struct net_device *out, 
 			int (*okfn)(struct sk_buff*))
 {		
-	struct ipv6hdr *ip_hdr = (skb!=0)?(struct ipv6hdr *)skb_network_header(skb):0;
+	struct ipv6hdr *ip_hdr = (struct ipv6hdr *)skb_network_header(skb);
 	unsigned int res=55;
 
 		if(!skb)
@@ -367,7 +368,7 @@ unsigned int main_hook_v6( unsigned int hooknum,
 			return NF_ACCEPT; 
 
 // TODO change to switch case here
-		if(ip_hdr->nexthdr == IPPROTO_ICMP)
+		if(ip_hdr->nexthdr == IPPROTO_ICMPV6)
 			res=test_icmp_v6(skb);
 
 		if(res!=55)
