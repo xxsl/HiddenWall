@@ -1,4 +1,6 @@
 # HiddenWall
+<img align="center" src="https://github.com/CoolerVoid/HiddenWall/blob/master/doc/hiddenwallCMD.png?raw=true">
+
 HiddenWall is a Linux kernel module generator for custom rules with netfilter. (block ports, Hidden mode, rootkit functions etc).
 <img align="right" width="240" height="220" src="https://github.com/CoolerVoid/HiddenWall/blob/master/doc/wall.png">
 The motivation: on bad situation, attacker can put your iptables/ufw to fall... but if you have HiddenWall, 
