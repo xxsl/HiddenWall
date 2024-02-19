@@ -1,40 +1,19 @@
-# HiddenWall
-<img align="center" src="https://github.com/CoolerVoid/HiddenWall/blob/master/doc/hiddenwallCMD.png?raw=true">
+He first step, understand before the run
 
-HiddenWall is a Linux kernel module generator for custom rules with netfilter. (block ports, Hidden mode, rootkit functions etc).
-<img align="right" width="240" height="220" src="https://github.com/CoolerVoid/HiddenWall/blob/master/doc/wall.png">
-The motivation: on bad situation, attacker can put your iptables/ufw to fall... but if you have HiddenWall, 
-the attacker will not find the hidden kernel module that block external access, because have a hook to netfilter on 
-kernel land(think like a second layer for firewall).
+Verify if the kernel version is 3.x, 4.x, or 5.x:
 
-My beginning purpose at this project is protect my personal server, now is protect the machines of my friends.
-When i talk "friends", i say peoples that don't know how to write low level code. Using the HiddenWall you can 
-generate your custom kernel module for your firewall configuration. 
-
-The low level programmer can write new templates for modules etc...
-
-
-First step, understand before run
---
-
-Verify if the kernel version is 3.x, 4.x or 5.x:
-```
 uname -r
-```
 
 Clone the repository
-```
-git clone https://github.com/CoolerVoid/HiddenWall
-```
+
+git clone https://github.com/danieldurneaHiddenWall
 
 Enter the folder
-```
+
 cd HiddenWall/module_generator
-```
 
-Edit your firewall rules in directory  rules/server.yaml, the python scripts use that file to generate a new firewall module.
+Edit your firewall rules in directory rules/server.YAML, the python scripts, use that file to generate a new firewall module.
 
-```
 $ cat rules/server.yaml
 module_name: SandWall
 public_ports: 80,443,53
@@ -50,77 +29,59 @@ whitelist:
    ip: 192.168.100.22
    open_ports: 22
 
-```
+If you want to study the static code to generate, look at the content at directory "templates".
+The second step, generate your module
 
-If you want study the static code to generate, look the content at directory "templates".
+If you want to generate a kernel module following your YAML file of rules, follow that command:
 
-
-
-
-Second step, generate your module
---
-
-If you want generate a kernel module following your YAML file of rules, follow that command:
-
-```
 $ python3 WallGen.py --template template/hiddenwall.c -r rules/server.yaml
-```
-This generate a generic module with rules of server.yaml, if you want to use another template you can use "wall.c", so template module "hiddenwall" have option to run on hidden mode(is not visible to "# lsmod" for example).
 
+This action can generate a generic module with the rules of the server.YAML, if you want to use another template, you can use "wall.c", so the template module "hidden wall" has the option to run on hidden mode(is not visible to "# lsmod" for example).
+The third step, install your module.
 
+If you use Fedora Linux, install kernel packages for developer:
 
-Third step, install your module
---
+# dnf update
+# dnf install kernel-headers.x86_64 kernel-modules.x86_64 kernel.x86_64 kernel-devel kmod
+
+On Ubuntu Linux:
+
+apt install linux-headers-generic gcc make
 
 To test module:
-```
+
 # cd output; make clean; make
 # insmod SandWall.ko
-```
 
-The rule of YAML to generate module is simple, drop all out to in packets, accept ports 80,443 and 53. The machine 192*.181 can connect at ports 22 and 21...
+YAML's rule to generate module is simple, drop all out to in packets, accept ports 80,443, and 53. The machine 192*.181 can connect at ports 22 and 21.
 
-if you use nmap at localhost/127.0.0.1 you can view the ports open... because rule liberate_in_2_out is true.
+If you use Nmap at localhost/127.0.0.1, you can view the ports open because rule liberate_in_2_out is true.
 
-Password to turn Firewall visible is "AbraKadabra".
+The password to turn Firewall visible is "AbraKadabra".
 
-Password to turn Firewall invisible is "Shazam".
+The password to turn the Firewall invisible is "Shazam".
 
-You need to send password for your fake device "usb14".
+You need to send the password for your fake device, "usb14".
 
-To exit module, you need turn visible at "lsmod" command ...
+To exit the module, you need to turn visible at the "lsmod" command ...
 
-```
 # echo "AbraKadabra" > /dev/usb14
 # lsmod | grep SandWall
 # rmmod SandWall
-```
-
 
 Random notes
---
 
 Tested on ubuntu 16 and fedora 29 at kernels "3.x","4.x" and "5.x".
-
-
 TODO
---
 
-Suport to IPV6.
-Macro to select the interface(to use multiple modes for each interface).
-Option to remove last logs when turn hide mode.
-Option to search and remove others toolkits...
-Code generator to BFP...
+Support to IPV6. Macro selects the interface(to use multiple modes for each interface). Option to remove last logs when turn hides mode. Option to search and remove other toolkits. Code generator to BFP...
+Point of attention
 
-
+The purpose of this tool is to use in pentest, take attention if you have a proper authorization before to use that. I do not have responsibility for your actions. You can use a hammer to construct a house or destroy it, choose the law path, don't be a bad guy, remember.
 References
---
 
-*Wikipedia Netfilter* 
-https://en.wikipedia.org/wiki/Netfilter
+Wikipedia Netfilter https://en.wikipedia.org/wiki/Netfilter
 
-*Linux Device Drivers* 
-http://lwn.net/Kernel/LDD3/
+Linux Device Drivers http://lwn.net/Kernel/LDD3/
 
-*M0nad's Diamorphine* 
-https://github.com/m0nad/Diamorphine/
+M0nad's Diamorphine https://github.com/m0nad/Diamorphine/
